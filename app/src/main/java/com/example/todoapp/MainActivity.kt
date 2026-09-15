@@ -55,12 +55,10 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(modifier: Modifier = Modifier) {
     val listTugas = remember { mutableStateListOf<String>() }
 
-    var isChecked by remember { mutableStateOf(false) }
-
     var showDialog by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("") }
 
-    var showHapus by remember {mutableStateOf(false)}
+    var showHapus by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier,
@@ -73,7 +71,6 @@ fun MainScreen(modifier: Modifier = Modifier) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -85,7 +82,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(onClick = {}) { Text("Edit") }
                 Spacer(modifier = Modifier.width(16.dp))
-                Button(onClick = {showHapus = true}) { Text("Hapus") }
+                Button(onClick = { showHapus = true }) { Text("Hapus") }
             }
 
             // Daftar Tugas Utama
@@ -142,37 +139,67 @@ fun MainScreen(modifier: Modifier = Modifier) {
             )
         }
 
-        if (showHapus){
+        if (showHapus) {
+            val selectedForDelete = remember { mutableStateListOf<String>() }
+
             AlertDialog(
                 onDismissRequest = {
                     showHapus = false
-                    inputText = ""
                 },
                 title = { Text("Hapus Tugas") },
                 text = {
-                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = isChecked, onCheckedChange = { isChecked = it })
-                        for (i in listTugas){
-                            Text(i)
+                    if (listTugas.isEmpty()) {
+                        Text("Tidak ada tugas untuk dihapus.")
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(listTugas) { tugas ->
+                                var isItemChecked by remember { mutableStateOf(false) }
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            MaterialTheme.colorScheme.surfaceContainerHighest,
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
+                                        .padding(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = isItemChecked,
+                                        onCheckedChange = { checked ->
+                                            isItemChecked = checked
+                                            if (checked) {
+                                                selectedForDelete.add(tugas)
+                                            } else {
+                                                selectedForDelete.remove(tugas)
+                                            }
+                                        }
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(text = tugas)
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
                         }
                     }
                 },
                 confirmButton = {
-                    Button(onClick = {
-                        if(isChecked){
-                            for (i in listTugas){
-                                listTugas.remove(i)
-                            }
+                    Button(
+                        onClick = {
+                            listTugas.removeAll(selectedForDelete)
                             showHapus = false
-                            inputText = ""
                         }
-                    }) {Text("Hapus")}
+                    ) {
+                        Text("Hapus")
+                    }
                 },
                 dismissButton = {
                     TextButton(
                         onClick = {
                             showHapus = false
-                            inputText = ""
                         }
                     ) {
                         Text("Batal")
