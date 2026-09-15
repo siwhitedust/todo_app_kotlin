@@ -54,8 +54,13 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(modifier: Modifier = Modifier) {
     val listTugas = remember { mutableStateListOf<String>() }
+
+    var isChecked by remember { mutableStateOf(false) }
+
     var showDialog by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("") }
+
+    var showHapus by remember {mutableStateOf(false)}
 
     Scaffold(
         modifier = modifier,
@@ -68,7 +73,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Baris Tombol Aksi
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -80,7 +85,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(onClick = {}) { Text("Edit") }
                 Spacer(modifier = Modifier.width(16.dp))
-                Button(onClick = {}) { Text("Hapus") }
+                Button(onClick = {showHapus = true}) { Text("Hapus") }
             }
 
             // Daftar Tugas Utama
@@ -96,7 +101,6 @@ fun MainScreen(modifier: Modifier = Modifier) {
             }
         }
 
-        // Dialog untuk Input Tugas Baru
         if (showDialog) {
             AlertDialog(
                 onDismissRequest = {
@@ -129,6 +133,45 @@ fun MainScreen(modifier: Modifier = Modifier) {
                     TextButton(
                         onClick = {
                             showDialog = false
+                            inputText = ""
+                        }
+                    ) {
+                        Text("Batal")
+                    }
+                }
+            )
+        }
+
+        if (showHapus){
+            AlertDialog(
+                onDismissRequest = {
+                    showHapus = false
+                    inputText = ""
+                },
+                title = { Text("Hapus Tugas") },
+                text = {
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = isChecked, onCheckedChange = { isChecked = it })
+                        for (i in listTugas){
+                            Text(i)
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        if(isChecked){
+                            for (i in listTugas){
+                                listTugas.remove(i)
+                            }
+                            showHapus = false
+                            inputText = ""
+                        }
+                    }) {Text("Hapus")}
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showHapus = false
                             inputText = ""
                         }
                     ) {
